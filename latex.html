@@ -1,0 +1,371 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>LaTeX Scratchpad</title>
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233a5fcd'/%3E%3Ctext x='16' y='23' font-family='Georgia,serif' font-size='20' font-style='italic' fill='%23fff' text-anchor='middle'%3E%E2%88%91%3C/text%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #222;
+    --muted: #777;
+    --line: #ddd;
+    --accent: #3a5fcd;
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --err: #c0392b;
+    --ok: #2e8b57;
+    --render-filter: none;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e6e6e6;
+      --muted: #999;
+      --line: #3a3a3a;
+      --accent: #7b9cff;
+      --bg: #1b1b1d;
+      --panel: #242427;
+      --err: #ff7b6b;
+      --ok: #6fcf97;
+      /* Rendered SVGs are black ink; flip them for dark backgrounds. */
+      --render-filter: invert(1) hue-rotate(180deg);
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .wrap { max-width: 1060px; margin: 0 auto; padding: 20px 16px 40px; }
+  .apphead { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; margin-bottom: 4px; }
+  h1 { font-size: 1.5rem; margin: 0; }
+  .tagline { color: var(--muted); font-size: 0.9rem; margin: 0 0 18px; }
+  .tagline a { color: var(--accent); }
+
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 8px;
+  }
+  textarea {
+    display: block;
+    width: 100%;
+    min-height: 140px;
+    resize: vertical;
+    padding: 14px;
+    border: 0;
+    border-radius: 8px 8px 0 0;
+    background: transparent;
+    color: inherit;
+    font: 15px/1.5 ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+    tab-size: 2;
+  }
+  textarea:focus { outline: none; }
+  .panel:focus-within { border-color: var(--accent); }
+
+  .bar {
+    display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    padding: 8px 10px;
+    border-top: 1px solid var(--line);
+    font-size: 0.85rem;
+  }
+  .bar label { display: inline-flex; align-items: center; gap: 5px; color: var(--muted); }
+  .bar select, .bar button {
+    font: inherit;
+    padding: 4px 9px;
+    border: 1px solid var(--line);
+    border-radius: 5px;
+    background: var(--bg);
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .bar button:hover, .bar select:hover { border-color: var(--accent); }
+  .bar .spacer { flex: 1; }
+
+  .output {
+    margin-top: 16px;
+    min-height: 180px;
+    display: flex; align-items: center; justify-content: center;
+    padding: 28px 16px;
+    overflow-x: auto;
+    position: relative;
+  }
+  .output img { max-width: none; filter: var(--render-filter); transition: opacity 0.15s; }
+  .output.stale img { opacity: 0.45; }
+  .placeholder { color: var(--muted); font-size: 0.9rem; }
+
+  .status {
+    margin-top: 8px;
+    min-height: 1.3em;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .status.err { color: var(--err); }
+  .status.ok { color: var(--ok); }
+  .toast {
+    position: fixed; left: 50%; bottom: 24px; transform: translateX(-50%);
+    padding: 8px 14px; border-radius: 6px;
+    background: var(--ink); color: var(--bg);
+    font-size: 0.85rem;
+    opacity: 0; pointer-events: none; transition: opacity 0.2s;
+  }
+  .toast.show { opacity: 1; }
+  .foot { margin-top: 28px; color: var(--muted); font-size: 0.75rem; text-align: center; }
+  .foot a { color: inherit; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="apphead">
+    <h1>LaTeX Scratchpad</h1>
+  </div>
+  <p class="tagline">Type an equation and it renders once you pause. Rendering is done by the <a href="https://fxeditor.codecogs.com/docs/1-fxtexserver_api.php" target="_blank" rel="noopener">CodeCogs FxTex API</a>.</p>
+
+  <div class="panel">
+    <textarea id="src" spellcheck="false" autocomplete="off" autocapitalize="off"
+      placeholder="e.g. \int_a^b \frac{1}{x}\,dx = \ln\frac{b}{a}"></textarea>
+    <div class="bar">
+      <label>Size
+        <select id="size">
+          <option value="">normal</option>
+          <option value="\large">large</option>
+          <option value="\Large" selected>Large</option>
+          <option value="\LARGE">LARGE</option>
+          <option value="\huge">huge</option>
+          <option value="\Huge">Huge</option>
+        </select>
+      </label>
+      <label><input type="checkbox" id="inline"> inline</label>
+      <span class="spacer"></span>
+      <button id="copyTex" title="Copy the LaTeX source">Copy LaTeX</button>
+      <button id="copyUrl" title="Copy a link to the rendered image">Copy image URL</button>
+      <button id="copyLink" title="Copy a link to this page with the equation filled in">Share link</button>
+      <button id="dlSvg" title="Download the rendered SVG">SVG</button>
+      <button id="dlPng" title="Download a 300 dpi PNG">PNG</button>
+    </div>
+  </div>
+
+  <div class="panel output" id="out"><span class="placeholder">Rendered output will show up here.</span></div>
+  <div class="status" id="status"></div>
+
+  <p class="foot">Updates after <span id="delayLabel"></span> ms with no typing. <kbd>Ctrl/⌘ + Enter</kbd> renders right away. Your last equation is kept in this browser.</p>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+(function () {
+  'use strict';
+
+  var API = 'https://fxtex.codecogs.com/';
+  var DEBOUNCE_MS = 700;
+  var STORE_KEY = 'quick-tools:latex';
+
+  var src = document.getElementById('src');
+  var sizeSel = document.getElementById('size');
+  var inlineBox = document.getElementById('inline');
+  var out = document.getElementById('out');
+  var statusEl = document.getElementById('status');
+  var toastEl = document.getElementById('toast');
+  document.getElementById('delayLabel').textContent = DEBOUNCE_MS;
+
+  var timer = null;
+  var controller = null;
+  var lastRendered = null;   // the full query string that is on screen now
+  var lastSvg = null;        // SVG markup for the current render
+  var blobUrl = null;
+  var cache = new Map();     // query -> {svg, valid, errors}; avoids repeat requests while editing back and forth
+  var blockedUntil = 0;      // set from Retry-After on a 429
+
+  // ---------- helpers ----------
+
+  function prefix() {
+    return (inlineBox.checked ? '\\inline ' : '') + (sizeSel.value ? sizeSel.value + ' ' : '');
+  }
+  function equation() { return src.value.trim(); }
+  function query(extra) { return encodeURIComponent((extra || '') + prefix() + equation()); }
+
+  function setStatus(text, cls) {
+    statusEl.textContent = text;
+    statusEl.className = 'status' + (cls ? ' ' + cls : '');
+  }
+
+  var toastTimer;
+  function toast(text) {
+    toastEl.textContent = text;
+    toastEl.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(function () { toastEl.classList.remove('show'); }, 1400);
+  }
+
+  function copy(text, what) {
+    if (!text) { toast('Nothing to copy'); return; }
+    navigator.clipboard.writeText(text).then(
+      function () { toast(what + ' copied'); },
+      function () { toast('Clipboard unavailable'); }
+    );
+  }
+
+  function save() {
+    try {
+      localStorage.setItem(STORE_KEY, JSON.stringify({
+        tex: src.value, size: sizeSel.value, inline: inlineBox.checked
+      }));
+    } catch (e) { /* storage unavailable: fine */ }
+  }
+
+  function load() {
+    // A shared link (#tex=...) wins over what was saved locally.
+    var m = location.hash.match(/^#tex=(.*)$/);
+    if (m) {
+      try { src.value = decodeURIComponent(m[1]); } catch (e) {}
+      history.replaceState(null, '', location.pathname + location.search);
+    }
+    try {
+      var s = JSON.parse(localStorage.getItem(STORE_KEY) || 'null');
+      if (s) {
+        if (!m) src.value = s.tex || '';
+        sizeSel.value = s.size != null ? s.size : sizeSel.value;
+        inlineBox.checked = !!s.inline;
+      }
+    } catch (e) {}
+  }
+
+  // ---------- rendering ----------
+
+  function show(result, q) {
+    lastRendered = q;
+    lastSvg = result.svg;
+    if (blobUrl) URL.revokeObjectURL(blobUrl);
+    // Show the SVG through an <img> + blob URL rather than injecting markup into the page.
+    blobUrl = URL.createObjectURL(new Blob([result.svg], { type: 'image/svg+xml' }));
+    var img = new Image();
+    img.alt = equation();
+    img.src = blobUrl;
+    out.replaceChildren(img);
+    out.classList.remove('stale');
+    if (result.valid === false) {
+      setStatus('⚠ ' + (result.errors && result.errors.length ? result.errors.join(' · ') : 'Some parts could not be rendered'), 'err');
+    } else {
+      setStatus('✓ Rendered', 'ok');
+    }
+  }
+
+  function clearOutput() {
+    lastRendered = null;
+    lastSvg = null;
+    out.classList.remove('stale');
+    out.innerHTML = '<span class="placeholder">Rendered output will show up here.</span>';
+    setStatus('');
+  }
+
+  function render() {
+    clearTimeout(timer);
+    if (!equation()) { if (controller) controller.abort(); clearOutput(); return; }
+
+    var q = query();
+    if (q === lastRendered) { out.classList.remove('stale'); return; }
+    if (cache.has(q)) { show(cache.get(q), q); return; }
+
+    var wait = blockedUntil - Date.now();
+    if (wait > 0) {
+      setStatus('Rate-limited; trying again in ' + Math.ceil(wait / 1000) + ' s…', 'err');
+      timer = setTimeout(render, wait);
+      return;
+    }
+
+    if (controller) controller.abort();
+    controller = new AbortController();
+    setStatus('Rendering…');
+
+    fetch(API + 'svg.json?' + q, { signal: controller.signal })
+      .then(function (res) {
+        if (res.status === 429) {
+          var secs = parseInt(res.headers.get('Retry-After'), 10) || 10;
+          blockedUntil = Date.now() + secs * 1000;
+          throw { retry: true };
+        }
+        if (!res.ok) throw new Error('HTTP ' + res.status);
+        return res.json();
+      })
+      .then(function (data) {
+        var r = data && data.latex;
+        if (!r || !r.svg) throw new Error('Unexpected response');
+        var result = { svg: r.svg, valid: r.valid, errors: r.errors };
+        cache.set(q, result);
+        // The text may have changed while the request was in flight; only show it if it still matches.
+        if (q === query()) show(result, q);
+      })
+      .catch(function (err) {
+        if (err && err.name === 'AbortError') return;
+        if (err && err.retry) { render(); return; }
+        setStatus('✗ Could not reach the renderer (' + (err && err.message || err) + ')', 'err');
+      });
+  }
+
+  function schedule() {
+    save();
+    clearTimeout(timer);
+    if (lastRendered !== null) out.classList.add('stale');
+    timer = setTimeout(render, DEBOUNCE_MS);
+  }
+
+  // ---------- downloads ----------
+
+  function download(url, name) {
+    var a = document.createElement('a');
+    a.href = url;
+    a.download = name;
+    document.body.appendChild(a);
+    a.click();
+    a.remove();
+  }
+
+  document.getElementById('dlSvg').addEventListener('click', function () {
+    if (!lastSvg) { toast('Nothing rendered yet'); return; }
+    download(blobUrl, 'equation.svg');
+  });
+
+  document.getElementById('dlPng').addEventListener('click', function () {
+    if (!equation()) { toast('Nothing rendered yet'); return; }
+    // Fetch as a blob so the download attribute is honoured (it is ignored for cross-origin links).
+    fetch(API + 'png.image?' + query('\\dpi{300}'))
+      .then(function (r) { if (!r.ok) throw new Error('HTTP ' + r.status); return r.blob(); })
+      .then(function (b) {
+        var u = URL.createObjectURL(b);
+        download(u, 'equation.png');
+        setTimeout(function () { URL.revokeObjectURL(u); }, 1000);
+      })
+      .catch(function (e) { toast('PNG download failed: ' + e.message); });
+  });
+
+  // ---------- wiring ----------
+
+  document.getElementById('copyTex').addEventListener('click', function () { copy(equation(), 'LaTeX'); });
+  document.getElementById('copyUrl').addEventListener('click', function () {
+    copy(equation() && API + 'svg.image?' + query(), 'Image URL');
+  });
+  document.getElementById('copyLink').addEventListener('click', function () {
+    copy(equation() && location.origin + location.pathname + '#tex=' + encodeURIComponent(src.value), 'Share link');
+  });
+
+  src.addEventListener('input', schedule);
+  sizeSel.addEventListener('change', function () { save(); render(); });
+  inlineBox.addEventListener('change', function () { save(); render(); });
+  src.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); save(); render(); }
+    // Tab inserts two spaces instead of leaving the box.
+    if (e.key === 'Tab' && !e.shiftKey) {
+      e.preventDefault();
+      document.execCommand('insertText', false, '  ');
+    }
+  });
+
+  load();
+  src.focus();
+  render();
+})();
+</script>
+</body>
+</html>
