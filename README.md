@@ -12,6 +12,7 @@ GitHub Pages or from a file saved to disk.
 | --- | --- | --- |
 | [LaTeX Scratchpad](./latex.html) | Type LaTeX and see it rendered live; copy or download the result as SVG or PNG. | Needs internet (renders through CodeCogs) |
 | [Graph Paper](./graphpaper.html) | 78 printable graph-paper generators (grids, dots, hex, isometric, music staves, Cornell notes, polar, log, and more) exported as PDF, SVG or PNG. | Works fully offline |
+| [QR Code Generator](./qr/) | QR codes for links, text, Wi-Fi, contacts, email, phone and SMS, exported as SVG, PNG, PDF, EPS or text. | Works fully offline |
 
 ### LaTeX Scratchpad — [`latex.html`](./latex.html)
 
@@ -68,6 +69,50 @@ The file and the PDFs it produces are released under
 [CC0 1.0](https://creativecommons.org/publicdomain/zero/1.0/) (public domain).
 For newer versions, see the [upstream page](https://incompetech.com/graphpaper/).
 
+### QR Code Generator — [`qr/`](./qr/)
+
+A QR code generator without ads, sign-ups, tracking or expiring links. The code
+is generated in the browser, so nothing you type leaves the page.
+
+- **What to encode** (tabs):
+  - *Text / URL*: anything, as is.
+  - *Wi-Fi*: network name, password, security and hidden network. Phones offer
+    to join when they scan it.
+  - *Contact*: name, phone, email, organization, job title and website, as a
+    vCard 3.0.
+  - *Email*, *Phone*, *SMS*: build `mailto:`, `tel:` and `SMSTO:` codes.
+
+  *Encoded text* under the form shows exactly what goes into the code.
+- **Options.**
+  - *Error correction* L/M/Q/H (default M). If a higher level fits without
+    making the code bigger, the encoder uses it, and the info line says so.
+  - *Quiet zone* in modules (default 4, the standard).
+  - Foreground and background colors, with a transparent-background option.
+- **Scan warnings** for low contrast, light-on-dark colors, a quiet zone under
+  4 modules, and text too long to fit.
+- **Exports.**
+
+  | Export | Details |
+  | --- | --- |
+  | PNG | Size of 256 to 4096 px. Each module is a whole number of pixels so edges stay sharp, so the actual size is shown next to the setting. |
+  | SVG | Vector, one compact path. |
+  | Copy image | Puts the PNG on the clipboard. |
+  | PDF, EPS | Vector, one page exactly the *Print size* (in, cm or mm, quiet zone included). |
+  | Text | Unicode half-block characters for terminals and code blocks, with a version for dark backgrounds. |
+
+  File names come from the content (e.g. `qr-wifi-homenet.png`).
+- **Remembers your settings** in `localStorage` under `quick-tools:qr`, except
+  the Wi-Fi password, which is never stored.
+- **Share link** (Text tab only): `qr/#text=…` opens the page with the text
+  filled in. Other tabs have no link, so passwords and contact details don't end
+  up in browser history or chat logs.
+
+Encoding uses [Project Nayuki's QR Code generator library](https://www.nayuki.io/page/qr-code-generator-library)
+(MIT), stored as [`qr/qrcodegen.js`](./qr/qrcodegen.js). Upstream only ships it
+as TypeScript, so this copy is v1.8.0 with the type annotations removed; the
+header comment explains the conversion. To update it, convert the new
+`qrcodegen.ts` the same way.
+
 ## Running locally
 
 Open any `.html` file directly in a browser. Some browser features (clipboard,
@@ -93,6 +138,8 @@ Then open <http://localhost:8000/> for the tool index.
    compact example):
    - `<meta name="viewport" …>` so it works on a phone.
    - A short `<title>` and an inline SVG data-URI favicon.
+   - In a tool directory, load a library with a plain `<script src="…">`, not
+     `type="module"`: browsers block modules on pages opened from disk.
    - Colors as CSS variables on `:root`, with a
      `@media (prefers-color-scheme: dark)` override.
    - Persist state in `localStorage` under a `quick-tools:<tool>` key, wrapped
@@ -115,5 +162,6 @@ opens the first match).
 
 ## License
 
-The graph paper generator is CC0 (see above). The other tools are my own work;
+The graph paper generator is CC0, and `qr/qrcodegen.js` is MIT (see above;
+its license text is in the file header). The other tools are my own work;
 add a `LICENSE` file if you want to set terms for them.
