@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Quick Tools</title>
+<meta name="description" content="Small, self-contained browser tools.">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='6' fill='%233a5fcd'/%3E%3Cpath d='M18 5 9 18h6l-2 9 9-13h-6z' fill='%23fff'/%3E%3C/svg%3E">
+<style>
+  :root {
+    --ink: #222;
+    --muted: #777;
+    --line: #ddd;
+    --accent: #3a5fcd;
+    --bg: #fafafa;
+    --panel: #ffffff;
+    --tag-bg: #eef1fb;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --ink: #e6e6e6;
+      --muted: #999;
+      --line: #3a3a3a;
+      --accent: #7b9cff;
+      --bg: #1b1b1d;
+      --panel: #242427;
+      --tag-bg: #2d3242;
+    }
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+  }
+  .wrap { max-width: 860px; margin: 0 auto; padding: 40px 16px 48px; }
+
+  header { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; margin-bottom: 6px; }
+  h1 { font-size: 1.6rem; margin: 0; }
+  .tagline { color: var(--muted); font-size: 0.95rem; margin: 0 0 24px; }
+
+  #filter {
+    margin-left: auto;
+    width: 220px;
+    padding: 7px 11px;
+    border: 1px solid var(--line);
+    border-radius: 6px;
+    background: var(--panel);
+    color: var(--ink);
+    font: inherit; font-size: 0.9rem;
+  }
+  #filter:focus { outline: none; border-color: var(--accent); }
+
+  .tools {
+    list-style: none; margin: 0; padding: 0;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+    gap: 14px;
+  }
+  .tool a {
+    display: flex; gap: 14px; align-items: flex-start;
+    height: 100%;
+    padding: 16px;
+    background: var(--panel);
+    border: 1px solid var(--line);
+    border-radius: 10px;
+    color: inherit;
+    text-decoration: none;
+    transition: border-color 0.15s, box-shadow 0.15s, transform 0.15s;
+  }
+  .tool a:hover, .tool a:focus-visible {
+    border-color: var(--accent);
+    box-shadow: 0 4px 14px rgba(0,0,0,0.08);
+    transform: translateY(-1px);
+    outline: none;
+  }
+  .tool.first a { border-color: var(--accent); }
+  .icon { flex: none; width: 44px; height: 44px; border-radius: 9px; }
+  .tool h2 { font-size: 1.05rem; margin: 2px 0 4px; }
+  .tool p { margin: 0 0 10px; color: var(--muted); font-size: 0.88rem; line-height: 1.4; }
+  .tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .tag {
+    font-size: 0.72rem;
+    padding: 2px 8px;
+    border-radius: 999px;
+    background: var(--tag-bg);
+    color: var(--accent);
+  }
+
+  .empty { color: var(--muted); font-size: 0.9rem; padding: 20px 0; display: none; }
+  footer { margin-top: 36px; color: var(--muted); font-size: 0.8rem; text-align: center; }
+  footer a { color: inherit; }
+  kbd {
+    font: 0.75rem ui-monospace, "SF Mono", Menlo, monospace;
+    padding: 1px 5px; border: 1px solid var(--line); border-radius: 4px;
+  }
+  @media (max-width: 520px) { #filter { margin-left: 0; width: 100%; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <h1>Quick Tools</h1>
+    <input type="search" id="filter" placeholder="Filter tools…" aria-label="Filter tools" autocomplete="off" hidden>
+  </header>
+  <p class="tagline">Small browser tools I use often. Each is a single page that runs in the browser.</p>
+
+  <!-- To add a tool: copy an <li> below. data-keywords helps the filter. -->
+  <ul class="tools" id="tools">
+    <li class="tool" data-keywords="latex tex math equation formula render svg png codecogs">
+      <a href="./latex.html">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#3a5fcd"/><text x="16" y="23" font-family="Georgia,serif" font-size="20" font-style="italic" fill="#fff" text-anchor="middle">∑</text></svg>
+        <div>
+          <h2>LaTeX Scratchpad</h2>
+          <p>Type an equation and see it rendered live. Copy a link or download it as SVG or PNG.</p>
+          <div class="tags"><span class="tag">math</span><span class="tag">needs internet</span></div>
+        </div>
+      </a>
+    </li>
+    <li class="tool" data-keywords="graph paper grid dots hex isometric print pdf svg png music cornell polar log incompetech">
+      <a href="./graphpaper.html">
+        <svg class="icon" viewBox="0 0 32 32" aria-hidden="true"><rect width="32" height="32" rx="6" fill="#fff" stroke="#ddd"/><path d="M8 0v32M16 0v32M24 0v32M0 8h32M0 16h32M0 24h32" stroke="#3a5fcd" stroke-width="1.5"/></svg>
+        <div>
+          <h2>Graph Paper</h2>
+          <p>78 printable paper generators: grids, dots, hex, isometric, music staves and more. Exports PDF, SVG or PNG.</p>
+          <div class="tags"><span class="tag">print</span><span class="tag">offline</span></div>
+        </div>
+      </a>
+    </li>
+  </ul>
+  <p class="empty" id="empty">No tools match. Press <kbd>Esc</kbd> to clear.</p>
+
+  <footer>
+    <a href="https://github.com/ghaliomar/quick-tools">Source on GitHub</a>
+    <span id="hint" hidden> · <kbd>/</kbd> to filter, <kbd>Enter</kbd> opens the first match</span>
+  </footer>
+</div>
+
+<script>
+(function () {
+  'use strict';
+  var box = document.getElementById('filter');
+  var items = Array.prototype.slice.call(document.querySelectorAll('.tool'));
+  var empty = document.getElementById('empty');
+  box.hidden = false;
+  document.getElementById('hint').hidden = false;
+
+  function visible() { return items.filter(function (li) { return !li.hidden; }); }
+
+  function apply() {
+    var words = box.value.toLowerCase().split(/\s+/).filter(Boolean);
+    items.forEach(function (li) {
+      var hay = (li.textContent + ' ' + (li.dataset.keywords || '')).toLowerCase();
+      li.hidden = !words.every(function (w) { return hay.indexOf(w) !== -1; });
+      li.classList.remove('first');
+    });
+    var shown = visible();
+    if (words.length && shown.length) shown[0].classList.add('first');
+    empty.style.display = shown.length ? 'none' : 'block';
+  }
+
+  box.addEventListener('input', apply);
+  box.addEventListener('keydown', function (e) {
+    if (e.key === 'Enter') {
+      var first = visible()[0];
+      if (first) first.querySelector('a').click();
+    } else if (e.key === 'Escape') {
+      box.value = ''; apply(); box.blur();
+    }
+  });
+  document.addEventListener('keydown', function (e) {
+    if (e.key === '/' && document.activeElement !== box) { e.preventDefault(); box.focus(); }
+  });
+})();
+</script>
+</body>
+</html>
